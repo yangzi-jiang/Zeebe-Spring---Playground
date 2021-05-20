@@ -124,5 +124,6 @@
     <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.63.Final" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.4" level="project" />
     <orderEntry type="library" name="Maven: io.camunda:spring-zeebe-util:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.20" level="project" />
   </component>
 </module>

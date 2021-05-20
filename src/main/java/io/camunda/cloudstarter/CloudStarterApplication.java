@@ -4,9 +4,6 @@ import ch.qos.logback.classic.Logger;
 import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.response.ProcessInstanceResult;
 import io.zeebe.client.api.response.Topology;
-import io.zeebe.client.api.response.WorkflowInstanceEvent;
-import io.zeebe.client.api.response.WorkflowInstanceResult;
-import io.zeebe.client.api.worker.JobClient;
 import io.zeebe.spring.client.EnableZeebeClient;
 import io.zeebe.spring.client.ZeebeClientLifecycle;
 import io.zeebe.spring.client.annotation.ZeebeDeployment;
@@ -23,11 +20,13 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableZeebeClient
 @RestController
-@ZeebeDeployment(classPathResources = {"supplier-service.bpmn"})
+@ZeebeDeployment(classPathResources = "pricing-monitoring-2.bpmn")
 public class CloudStarterApplication {
 	@Autowired
 	private ZeebeClientLifecycle client;
@@ -64,7 +63,32 @@ public class CloudStarterApplication {
 						.send()
 						.join();
 
-		log.info("started instance for workflowKey='{}', bpmnProcessId='{}', version='{}' with workflowInstanceKey='{}'",
+		logger.info("started instance for workflowKey='{}', bpmnProcessId='{}', version='{}' with workflowInstanceKey='{}'",
 				event.getProcessDefinitionKey(), event.getBpmnProcessId(), event.getVersion(), event.getProcessInstanceKey());
+
+		// Prepare variable for data flow in Zeebe processes
+		final FetchStatus fetchStatus = new FetchStatus();
+		fetchStatus.setFetchStatusID(UUID.randomUUID());
+		fetchStatus.setCustomerName("yangzi");
+		fetchStatus.setBusinessLabel("yangzi's workflow #1");
+		fetchStatus.setCatalogFileName("N/A");
+
+		client
+				.newPublishMessageCommand()
+				.messageName("fetching").correlationKey("correlationValue")
+				.variables(fetchStatus)
+				.send().join();
+
+
+		TimeUnit.SECONDS.sleep(1);
+
+		// Send message to the Message Receive Task in the Event Sub Process
+		fetchStatus.setFetchComplete(Boolean.TRUE);
+		client
+				.newPublishMessageCommand()
+				.messageName("Pricing Integration Running").correlationKey(fetchStatus.getBusinessLabel())
+				.variables(fetchStatus)
+				.send().join();
+	}
 	}
 }
