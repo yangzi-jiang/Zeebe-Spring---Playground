@@ -39,7 +39,8 @@ public class CloudStarterApplication {
 	}
 
 	// An endpoint to start a new instance of the workflow
-	@Scheduled(cron = "*/3 * * * * *")
+//	@Scheduled(cron = "*/3 * * * * *")
+	@GetMapping("/start")
 	public void startWorkflowInstance() {
 		WorkflowInstanceResult workflowInstanceResult = client
 				.newCreateInstanceCommand()
@@ -51,7 +52,7 @@ public class CloudStarterApplication {
 		logger.info("workflow instance result ='{}'", workflowInstanceResult.toString());
 	}
 
-	@ZeebeWorker(type = "get-completion-status")
+	@ZeebeWorker(type = "get-time")
 	public void handleGetTime(final JobClient client, final ActivatedJob job) {
 		final String uri = "https://json-api.joshwulf.com/time";
 
