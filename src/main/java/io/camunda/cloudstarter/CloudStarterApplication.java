@@ -80,7 +80,7 @@ public class CloudStarterApplication {
 				.send().join();
 
 
-		TimeUnit.SECONDS.sleep(1);
+		TimeUnit.SECONDS.sleep(5);
 
 		// Send message to the Message Receive Task in the Event Sub Process
 		fetchStatus.setFetchComplete(Boolean.TRUE);
