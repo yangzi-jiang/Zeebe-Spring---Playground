@@ -48,7 +48,7 @@
     <bpmn:startEvent id="StartEvent_1" name="Start">
       <bpmn:outgoing>Flow_03x6xfn</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_15ve9kc">
-        <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">=R/PT60S</bpmn:timeCycle>
+        <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R5/PT30S</bpmn:timeCycle>
       </bpmn:timerEventDefinition>
     </bpmn:startEvent>
   </bpmn:process>
