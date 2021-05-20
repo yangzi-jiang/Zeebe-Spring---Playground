@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Map;
+
 @SpringBootApplication
 @EnableZeebeClient
 @RestController
@@ -46,10 +48,13 @@ public class CloudStarterApplication {
 				.newCreateInstanceCommand()
 				.bpmnProcessId("test-process")
 				.latestVersion()
+				.variables("{\"name\": \"Yangzi Jiang\"}")
 				.withResult()
 				.send()
 				.join();
-		return workflowInstanceResult.toString();
+		return (String) workflowInstanceResult
+				.getVariablesAsMap()
+				.getOrDefault("say", "Error: No greeting returned");
 	}
 
 	@ZeebeWorker(type = "get-completion-status")
@@ -61,6 +66,18 @@ public class CloudStarterApplication {
 
 		client.newCompleteCommand(job.getKey())
 				.variables("{\"time\":" + result + "}")
+				.send().join();
+	}
+
+	@ZeebeWorker(type = "make-greeting")
+	public void handleMakeGreeting(final JobClient client, final ActivatedJob job) {
+		Map<String, String> headers = job.getCustomHeaders();
+		String greeting = headers.getOrDefault("greeting", "Good day");
+		Map<String, Object> variablesAsMap = job.getVariablesAsMap();
+		String name = (String) variablesAsMap.getOrDefault("name", "there");
+		String say = greeting + " " + name;
+		client.newCompleteCommand(job.getKey())
+				.variables("{\"say\": \"" + say + "\"}")
 				.send().join();
 	}
 }
