@@ -2,6 +2,7 @@ package io.camunda.cloudstarter;
 
 import ch.qos.logback.classic.Logger;
 import io.zeebe.client.api.response.ActivatedJob;
+import io.zeebe.client.api.response.ProcessInstanceResult;
 import io.zeebe.client.api.response.Topology;
 import io.zeebe.client.api.response.WorkflowInstanceEvent;
 import io.zeebe.client.api.response.WorkflowInstanceResult;
@@ -14,10 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @SpringBootApplication
@@ -41,43 +45,26 @@ public class CloudStarterApplication {
 		return topology.toString();
 	}
 
-	// An endpoint to start a new instance of the workflow
-	@GetMapping("/start")
-	public String startWorkflowInstance() {
-		WorkflowInstanceResult workflowInstanceResult = client
-				.newCreateInstanceCommand()
-				.bpmnProcessId("test-process")
-				.latestVersion()
-				.variables("{\"name\": \"Yangzi Jiang\"}")
-				.withResult()
-				.send()
-				.join();
-		return (String) workflowInstanceResult
-				.getVariablesAsMap()
-				.getOrDefault("say", "Error: No greeting returned");
-	}
+	@Scheduled(cron = "${cron.expression}", zone = "${cron.zone}")
+	public void startPricingWorkflow() {
+		if (!client.isRunning()) {
+			return;
+		}
 
-	@ZeebeWorker(type = "get-completion-status")
-	public void handleGetTime(final JobClient client, final ActivatedJob job) {
-		final String uri = "https://json-api.joshwulf.com/time";
+		// Set time as the UUID for BPMN process ID
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
 
-		RestTemplate restTemplate = new RestTemplate();
-		String result = restTemplate.getForObject(uri, String.class);
+		final ProcessInstanceResult event =
+				client
+						.newCreateInstanceCommand()
+						.bpmnProcessId("{\"time\": \"" + dtf.format(now) + "\"}")
+						.latestVersion()
+						.withResult()
+						.send()
+						.join();
 
-		client.newCompleteCommand(job.getKey())
-				.variables("{\"time\":" + result + "}")
-				.send().join();
-	}
-
-	@ZeebeWorker(type = "make-greeting")
-	public void handleMakeGreeting(final JobClient client, final ActivatedJob job) {
-		Map<String, String> headers = job.getCustomHeaders();
-		String greeting = headers.getOrDefault("greeting", "Good day");
-		Map<String, Object> variablesAsMap = job.getVariablesAsMap();
-		String name = (String) variablesAsMap.getOrDefault("name", "there");
-		String say = greeting + " " + name;
-		client.newCompleteCommand(job.getKey())
-				.variables("{\"say\": \"" + say + "\"}")
-				.send().join();
+		log.info("started instance for workflowKey='{}', bpmnProcessId='{}', version='{}' with workflowInstanceKey='{}'",
+				event.getProcessDefinitionKey(), event.getBpmnProcessId(), event.getVersion(), event.getProcessInstanceKey());
 	}
 }

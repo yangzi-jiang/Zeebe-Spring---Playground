@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.10.RELEASE</version>
+		<version>2.4.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.camunda</groupId>
@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>io.zeebe.spring</groupId>
 			<artifactId>spring-zeebe-starter</artifactId>
-			<version>0.23.0</version>
+			<version>1.0.0-alpha5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -42,7 +42,12 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>io.camunda</groupId>
+            <artifactId>spring-zeebe</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
