@@ -1,9 +1,7 @@
 package io.camunda.cloudstarter;
 
-import ch.qos.logback.classic.Logger;
 import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.response.Topology;
-import io.zeebe.client.api.response.WorkflowInstanceEvent;
 import io.zeebe.client.api.response.WorkflowInstanceResult;
 import io.zeebe.client.api.worker.JobClient;
 import io.zeebe.spring.client.EnableZeebeClient;
@@ -14,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -40,8 +39,8 @@ public class CloudStarterApplication {
 	}
 
 	// An endpoint to start a new instance of the workflow
-	@GetMapping("/start")
-	public String startWorkflowInstance() {
+	@Scheduled(cron = "${cron.expression}", zone = "${cron.zone}")
+	public void startWorkflowInstance() {
 		WorkflowInstanceResult workflowInstanceResult = client
 				.newCreateInstanceCommand()
 				.bpmnProcessId("test-process")
@@ -49,7 +48,7 @@ public class CloudStarterApplication {
 				.withResult()
 				.send()
 				.join();
-		return workflowInstanceResult.toString();
+		logger.info("workflow instance result ='{}'", workflowInstanceResult.toString());
 	}
 
 	@ZeebeWorker(type = "get-completion-status")
