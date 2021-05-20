@@ -38,13 +38,13 @@ public class CloudStarterApplication {
 		SpringApplication.run(CloudStarterApplication.class, args);
 	}
 
-	// Creates a REST endpoint
-	// Request a topology from Zeebe cluster
-	@GetMapping("/status")
-	public String getStatus() {
-		Topology topology = client.newTopologyRequest().send().join();
-		return topology.toString();
-	}
+//	// Creates a REST endpoint
+//	// Request a topology from Zeebe cluster
+//	@GetMapping("/status")
+//	public String getStatus() {
+//		Topology topology = client.newTopologyRequest().send().join();
+//		return topology.toString();
+//	}
 
 //
 //	@Scheduled(cron = "${cron.expression}", zone = "${cron.zone}")
