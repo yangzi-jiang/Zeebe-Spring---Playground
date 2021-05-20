@@ -2,6 +2,7 @@ package io.camunda.cloudstarter;
 
 import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.response.Topology;
+import io.zeebe.client.api.response.WorkflowInstanceEvent;
 import io.zeebe.client.api.response.WorkflowInstanceResult;
 import io.zeebe.client.api.worker.JobClient;
 import io.zeebe.spring.client.EnableZeebeClient;
@@ -16,6 +17,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @SpringBootApplication
 @EnableZeebeClient
@@ -42,25 +46,27 @@ public class CloudStarterApplication {
 //	@Scheduled(cron = "*/3 * * * * *")
 	@GetMapping("/start")
 	public void startWorkflowInstance() {
-		WorkflowInstanceResult workflowInstanceResult = client
+		client
 				.newCreateInstanceCommand()
 				.bpmnProcessId("test-process")
 				.latestVersion()
-				.withResult()
 				.send()
 				.join();
-		logger.info("workflow instance result ='{}'", workflowInstanceResult.toString());
+//		logger.info("workflow instance result ='{}'", workflowInstanceResult.toString());
 	}
 
 	@ZeebeWorker(type = "get-time")
 	public void handleGetTime(final JobClient client, final ActivatedJob job) {
-		final String uri = "https://json-api.joshwulf.com/time";
+//		final String uri = "https://json-api.joshwulf.com/time";
+//
+//		RestTemplate restTemplate = new RestTemplate();
+//		String result = restTemplate.getForObject(uri, String.class);
 
-		RestTemplate restTemplate = new RestTemplate();
-		String result = restTemplate.getForObject(uri, String.class);
+		var dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss");
+		var now = LocalDateTime.now();
 
 		client.newCompleteCommand(job.getKey())
-				.variables("{\"time\":" + result + "}")
+				.variables("{\"time\":" + "${dtf.format(now)}" + "}")
 				.send().join();
 	}
 }
