@@ -44,7 +44,7 @@ public class CloudStarterApplication {
 
 	// An endpoint to start a new instance of the workflow
 //	@Scheduled(cron = "*/3 * * * * *")
-	@GetMapping("/start")
+//	@GetMapping("/start")
 	public void startWorkflowInstance() {
 		client
 				.newCreateInstanceCommand()
@@ -66,7 +66,7 @@ public class CloudStarterApplication {
 		var now = LocalDateTime.now();
 
 		client.newCompleteCommand(job.getKey())
-				.variables("{\"time\":" + "${dtf.format(now)}" + "}")
+				.variables("{\"time\": \"" + dtf.format(now) + "\"}")
 				.send().join();
 	}
 }
