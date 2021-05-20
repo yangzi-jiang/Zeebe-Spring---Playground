@@ -45,7 +45,7 @@ public class CloudStarterApplication {
 	}
 
 	@Scheduled(cron = "${cron.expression}", zone = "${cron.zone}")
-	public void startPricingWorkflow() {
+	public void startPricingWorkflow() throws InterruptedException {
 		if (!client.isRunning()) {
 			return;
 		}
@@ -89,6 +89,5 @@ public class CloudStarterApplication {
 				.messageName("Pricing Integration Running").correlationKey(fetchStatus.getBusinessLabel())
 				.variables(fetchStatus)
 				.send().join();
-	}
 	}
 }
