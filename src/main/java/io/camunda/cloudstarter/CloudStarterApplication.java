@@ -20,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @EnableZeebeClient
 @RestController
-@ZeebeDeployment(classPathResources = {"supplier-service.bpmn"})
+@ZeebeDeployment(classPathResources = {"test-process.bpmn"})
 public class CloudStarterApplication {
 	@Autowired
 	private ZeebeClientLifecycle client;
