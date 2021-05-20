@@ -39,7 +39,7 @@ public class CloudStarterApplication {
 	}
 
 	// An endpoint to start a new instance of the workflow
-	@Scheduled(cron = "${cron.expression}", zone = "${cron.zone}")
+	@Scheduled(cron = "*/3 * * * * *")
 	public void startWorkflowInstance() {
 		WorkflowInstanceResult workflowInstanceResult = client
 				.newCreateInstanceCommand()
